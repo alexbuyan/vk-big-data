@@ -7,7 +7,7 @@ from pyflink.datastream.connectors.kafka import KafkaSource, \
     KafkaOffsetsInitializer, KafkaSink, KafkaRecordSerializationSchema
 from pyflink.datastream.formats.json import JsonRowDeserializationSchema
 from pyflink.datastream.functions import MapFunction, ReduceFunction
-from pyflink.datastream.window import TumblingEventTimeWindows, SlidingEventTimeWindows
+from pyflink.datastream.window import SlidingProcessingTimeWindows
 
 
 class MyData:
@@ -40,7 +40,7 @@ def python_data_stream_example():
     source = KafkaSource.builder() \
         .set_bootstrap_servers('kafka:9092') \
         .set_topics('alexbuyan_hw3') \
-        .set_group_id('pyflink-e2e-source') \
+        .set_group_id('sliding') \
         .set_starting_offsets(KafkaOffsetsInitializer.earliest()) \
         .set_value_only_deserializer(json_row_schema) \
         .build()
@@ -48,7 +48,7 @@ def python_data_stream_example():
     sink = KafkaSink.builder() \
         .set_bootstrap_servers('kafka:9092') \
         .set_record_serializer(KafkaRecordSerializationSchema.builder()
-                               .set_topic('alexbuyan_task2')
+                               .set_topic('alexbuyan_sliding')
                                .set_value_serialization_schema(SimpleStringSchema())
                                .build()
                                ) \
@@ -56,7 +56,7 @@ def python_data_stream_example():
         .build()
 
     ds = env.from_source(source, WatermarkStrategy.no_watermarks(), "Kafka Source")
-    ds.window_all(SlidingEventTimeWindows.of(Time.minutes(3), Time.minutes(1))) \
+    ds.window_all(SlidingProcessingTimeWindows.of(Time.seconds(30), Time.seconds(10))) \
         .reduce(GetMaxTempFunc()) \
         .map(TemperatureFunction(), Types.STRING()) \
         .sink_to(sink)

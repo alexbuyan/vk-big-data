@@ -3,8 +3,8 @@ from kafka import KafkaConsumer
 
 def create_consumer():
     print("Connecting to Kafka brokers")
-    consumer = KafkaConsumer("alexbuyan_task2",
-                             group_id="alexbuyan_group_task2",
+    consumer = KafkaConsumer("alexbuyan_tumbling",
+                             group_id="tumbling",
                              bootstrap_servers='localhost:29092',
                              auto_offset_reset='earliest',
                              enable_auto_commit=True)
