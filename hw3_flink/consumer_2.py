@@ -10,7 +10,6 @@ def create_consumer():
                              enable_auto_commit=True)
 
     for message in consumer:
-        #save to DB
         print(message)
 
 

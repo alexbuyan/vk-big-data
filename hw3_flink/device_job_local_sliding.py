@@ -1,4 +1,4 @@
-from pyflink.common import SimpleStringSchema
+from pyflink.common import SimpleStringSchema, Time
 from pyflink.common.typeinfo import Types, RowTypeInfo
 from pyflink.common.watermark_strategy import WatermarkStrategy
 from pyflink.datastream import StreamExecutionEnvironment, TimeCharacteristic
@@ -6,8 +6,22 @@ from pyflink.datastream.connectors import DeliveryGuarantee
 from pyflink.datastream.connectors.kafka import KafkaSource, \
     KafkaOffsetsInitializer, KafkaSink, KafkaRecordSerializationSchema
 from pyflink.datastream.formats.json import JsonRowDeserializationSchema
-from pyflink.datastream.functions import MapFunction
-from pyflink.datastream.checkpoint_storage import CheckpointStorage
+from pyflink.datastream.functions import MapFunction, ReduceFunction
+from pyflink.datastream.window import TumblingEventTimeWindows, SlidingEventTimeWindows
+
+
+class MyData:
+    def __init__(self, device_id, temperature, execution_time):
+        self.device_id = device_id
+        self.temperature = temperature
+        self.execution_time = execution_time
+
+
+class GetMaxTempFunc(ReduceFunction):
+    def reduce(self, value1: MyData, value2: MyData) -> MyData:
+        if value1.temperature < value2.temperature:
+            return value2
+        return value1
 
 
 def python_data_stream_example():
@@ -42,16 +56,18 @@ def python_data_stream_example():
         .build()
 
     ds = env.from_source(source, WatermarkStrategy.no_watermarks(), "Kafka Source")
-    ds.map(TemperatureFunction(), Types.STRING()) \
+    ds.window_all(SlidingEventTimeWindows.of(Time.minutes(3), Time.minutes(1))) \
+        .reduce(GetMaxTempFunc()) \
+        .map(TemperatureFunction(), Types.STRING()) \
         .sink_to(sink)
-    env.execute_async("Devices preprocessing with local checkpoints")
+    env.execute_async("Sliding Window Preprocessing")
 
 
 class TemperatureFunction(MapFunction):
 
     def map(self, value):
         device_id, temperature, execution_time = value
-        return str({"device_id": device_id, "temperature": temperature - 273, "execution_time": execution_time})
+        return str({"device_id": device_id, "temperature": temperature, "execution_time": execution_time})
 
 
 if __name__ == '__main__':
