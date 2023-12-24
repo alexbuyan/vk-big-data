@@ -7,6 +7,7 @@ from pyflink.datastream.connectors.kafka import KafkaSource, \
     KafkaOffsetsInitializer, KafkaSink, KafkaRecordSerializationSchema
 from pyflink.datastream.formats.json import JsonRowDeserializationSchema
 from pyflink.datastream.functions import MapFunction
+from pyflink.datastream.checkpoint_storage import CheckpointStorage
 
 
 def python_data_stream_example():
@@ -33,7 +34,7 @@ def python_data_stream_example():
     sink = KafkaSink.builder() \
         .set_bootstrap_servers('kafka:9092') \
         .set_record_serializer(KafkaRecordSerializationSchema.builder()
-                               .set_topic('alexbuyan_hw3_processed')
+                               .set_topic('alexbuyan_task2')
                                .set_value_serialization_schema(SimpleStringSchema())
                                .build()
                                ) \
@@ -43,7 +44,7 @@ def python_data_stream_example():
     ds = env.from_source(source, WatermarkStrategy.no_watermarks(), "Kafka Source")
     ds.map(TemperatureFunction(), Types.STRING()) \
         .sink_to(sink)
-    env.execute_async("Devices preprocessing")
+    env.execute_async("Devices preprocessing with local checkpoints")
 
 
 class TemperatureFunction(MapFunction):

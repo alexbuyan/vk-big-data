@@ -17,9 +17,6 @@ def python_data_stream_example():
     # assertion.
     env.set_parallelism(1)
     env.set_stream_time_characteristic(TimeCharacteristic.EventTime)
-    env.enable_checkpointing(5000)
-    checkpoint_config = env.get_checkpoint_config()
-    checkpoint_config.set_checkpoint_storage(CheckpointStorage('file:///opt/pyflink/tmp/checkpoints/logs'))
 
     type_info: RowTypeInfo = Types.ROW_NAMED(['device_id', 'temperature', 'execution_time'],
                                              [Types.LONG(), Types.DOUBLE(), Types.INT()])
@@ -37,7 +34,7 @@ def python_data_stream_example():
     sink = KafkaSink.builder() \
         .set_bootstrap_servers('kafka:9092') \
         .set_record_serializer(KafkaRecordSerializationSchema.builder()
-                               .set_topic('alexbuyan_task1')
+                               .set_topic('alexbuyan_task2')
                                .set_value_serialization_schema(SimpleStringSchema())
                                .build()
                                ) \

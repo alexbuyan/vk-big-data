@@ -19,7 +19,7 @@ def python_data_stream_example():
     env.set_stream_time_characteristic(TimeCharacteristic.EventTime)
     env.enable_checkpointing(5000)
     checkpoint_config = env.get_checkpoint_config()
-    checkpoint_config.set_checkpoint_storage(CheckpointStorage('hdfs:///namenode:8020/tmp/checkpoints/logs'))
+    checkpoint_config.set_checkpoint_storage_dir('hdfs://namenode:9870/checkpoints/')
 
     type_info: RowTypeInfo = Types.ROW_NAMED(['device_id', 'temperature', 'execution_time'],
                                              [Types.LONG(), Types.DOUBLE(), Types.INT()])
@@ -37,7 +37,7 @@ def python_data_stream_example():
     sink = KafkaSink.builder() \
         .set_bootstrap_servers('kafka:9092') \
         .set_record_serializer(KafkaRecordSerializationSchema.builder()
-                               .set_topic('alexbuyan_hw3_processed')
+                               .set_topic('alexbuyan_task1')
                                .set_value_serialization_schema(SimpleStringSchema())
                                .build()
                                ) \
@@ -47,7 +47,7 @@ def python_data_stream_example():
     ds = env.from_source(source, WatermarkStrategy.no_watermarks(), "Kafka Source")
     ds.map(TemperatureFunction(), Types.STRING()) \
         .sink_to(sink)
-    env.execute_async("Devices preprocessing with local checkpoints")
+    env.execute_async("Devices preprocessing with hdfs checkpoints")
 
 
 class TemperatureFunction(MapFunction):
