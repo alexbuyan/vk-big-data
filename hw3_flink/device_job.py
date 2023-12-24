@@ -16,7 +16,6 @@ def python_data_stream_example():
     # assertion.
     env.set_parallelism(1)
     env.set_stream_time_characteristic(TimeCharacteristic.EventTime)
-    
 
     type_info: RowTypeInfo = Types.ROW_NAMED(['device_id', 'temperature', 'execution_time'],
                                              [Types.LONG(), Types.DOUBLE(), Types.INT()])
@@ -25,7 +24,7 @@ def python_data_stream_example():
 
     source = KafkaSource.builder() \
         .set_bootstrap_servers('kafka:9092') \
-        .set_topics('itmo2023') \
+        .set_topics('alexbuyan_hw3') \
         .set_group_id('pyflink-e2e-source') \
         .set_starting_offsets(KafkaOffsetsInitializer.earliest()) \
         .set_value_only_deserializer(json_row_schema) \
@@ -34,7 +33,7 @@ def python_data_stream_example():
     sink = KafkaSink.builder() \
         .set_bootstrap_servers('kafka:9092') \
         .set_record_serializer(KafkaRecordSerializationSchema.builder()
-                               .set_topic('itmo2023_processed')
+                               .set_topic('alexbuyan_hw3_processed')
                                .set_value_serialization_schema(SimpleStringSchema())
                                .build()
                                ) \

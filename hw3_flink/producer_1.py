@@ -8,7 +8,7 @@ from kafka import errors
 
 def write_data(producer):
     data_cnt = 20000
-    topic = "itmo2023"
+    topic = "alexbuyan_hw3"
 
     for i in range(data_cnt):
         device_id = random.randint(1, 10)
