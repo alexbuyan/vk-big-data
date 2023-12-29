@@ -1,22 +1,94 @@
-# bigdata-docker-compose
-(Почти) настроенный докер с последним hadoop и сопутствующими инструментами на борту
+### Producer
 
-Образ при сборке выкачивает много данных (ставит хадупы\юпитеры\хайвы и т.д.). Это норма.
-Лучше не запускаться при подключении к лимитному интернету.
+Run in producer in one CLI (Similar for every task)
 
-Для запуска:
+```commandline
+python hw3_flink/producer.py
+```
 
-1. Поставить docker + docker-compose на локальную машину
+## Task1
 
-Для запуска hadoop:
-1. Сначала запускаем неймноду с командой command: ["hdfs", "namenode", "-format", "-force"] 
-2. Так запуститься надо только в первый раз (либо, после того, как вы снесли образ и примонтированный раздел)
-3. После того, как контейнер отработал и завершился, запускаемся с командой command: ["hdfs", "namenode"]
-4. После неймноды поднимаем датаноды, нодменеджеры и т.д.
+### Consumer
 
-Для запуска hive:
-1. Сначала поднимаем постгрес.
-1. Затем поднимаем метастор с командой command: ["schematool", "--dbType", "postgres", "--initSchema"]
-2. Так запуститься надо только в первый раз (либо, после того, как вы снесли образ и примонтированный раздел)
-2. После того, как контейнер отработал и завершился, запускаемся с командой command: [ "hive", "--service", "metastore" ]
-3. После метастора запускаем hiveserver2
+In other CLI first configure checkpoints
+
+#### Local checkpoints
+
+```commandline
+docker-compose exec jobmanager ./bin/flink run -py /opt/pyflink/hw3_flink/device_job_local_checkpoints.py -d
+```
+
+#### HDFS checkpoints
+
+Doesn't work, some internal config error
+
+```commandline
+docker-compose exec jobmanager ./bin/flink run -py /opt/pyflink/hw3_flink/device_job_hdfs_checkpoints.py -d
+```
+
+Then run consumer
+
+```commandline
+python hw3_flink/consumer_1.py
+```
+
+### Screenshots
+
+Local - `hw3_flink/images/local_checkpoints.png`
+
+# Next parts
+
+For next tasks the process of running consumer is similar, but we just change the job and the consumer files. I provide
+their names in the description to the task
+
+## Task2
+Jobs
+- Tumbling - `/opt/pyflink/hw3_flink/device_job_local_tumbling.py`
+- Sliding - `/opt/pyflink/hw3_flink/device_job_local_sliding.py`
+- Session - `/opt/pyflink/hw3_flink/device_job_local_session.py`
+
+Consumer - `hw3_flink/consumer_2.py`
+
+## Task3
+Job - `/opt/pyflink/hw3_flink/device_job_3.py`
+
+
+Consumer - `hw3_flink/consumer_3.py`
+
+### Kafka CheatSheet
+
+```commandline
+docker-compose build
+```
+
+```commandline
+docker-compose up -d
+```
+
+```commandline
+docker-compose ps
+```
+
+```
+http://localhost:8081/#/overview
+```
+
+```commandline
+docker-compose down -v
+```
+
+```commandline
+docker-compose exec kafka kafka-topics.sh --bootstrap-server kafka:9092 --create --topic topic_name --partitions 1 --replication-factor 1
+```
+
+```commandline
+docker-compose exec kafka kafka-topics.sh --bootstrap-server kafka:9092 --describe itmo  
+```
+
+```commandline
+ docker-compose exec kafka kafka-topics.sh --bootstrap-server kafka:9092 --alter --topic itmo --partitions 2
+```
+
+```commandline
+docker-compose exec jobmanager ./bin/flink run -py /opt/pyflink/device_job.py -d  
+```
