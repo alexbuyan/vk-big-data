@@ -1,4 +1,34 @@
+import functools
+import random
+import time
+
 from kafka import KafkaConsumer
+
+
+def backoff(tries, sleep):
+    def decorator(function):
+        @functools.wraps(function)
+        def wrapper(*args, **kwargs):
+            for i in range(tries):
+                result = function(*args, **kwargs)
+                if not result:
+                    print(f'Failed attempt_no {i} to backoff')
+                    time.sleep(sleep)
+            print('Backoff finished!')
+
+        return wrapper
+
+    return decorator
+
+
+@backoff(tries=3, sleep=1)
+def message_handler(message):
+    rand_val = random.randint(0, 20)
+    print(f'Rand Val: {rand_val}')
+    if rand_val % 2 == 0:
+        print(f'Handled message: {message}')
+        return True
+    return False
 
 
 def create_consumer():
@@ -10,7 +40,8 @@ def create_consumer():
                              enable_auto_commit=True)
 
     for message in consumer:
-        #save to DB
+        # save to DB
+        message_handler(message)
         print(message)
 
 

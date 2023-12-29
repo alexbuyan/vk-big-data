@@ -50,8 +50,8 @@ Jobs
 Consumer - `hw3_flink/consumer_2.py`
 
 ## Task3
-Jobs
-- 
+Job - `/opt/pyflink/hw3_flink/device_job_3.py`
+
 
 Consumer - `hw3_flink/consumer_3.py`
 
